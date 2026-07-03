@@ -1,0 +1,30 @@
+name: E5 Auto Renew (OIDC)
+on:
+schedule:
+- cron: '0 * * * *'
+workflow_dispatch:
+permissions:
+id-token: write # Quyền bắt buộc để sử dụng OIDC
+contents: read
+jobs:
+renew:
+runs-on: ubuntu-latest
+steps:
+- name: Lấy mã nguồn
+uses: actions/checkout@v4
+- name: Cài đặt Python
+uses: actions/setup-python@v5
+with:
+python-version: '3.12'
+- name: Cài đặt thư viện
+run: pip install azure-identity requests
+- name: Chờ ngẫu nhiên
+run: sleep $((RANDOM % 200))
+- name: Đăng nhập Azure bằng OIDC
+uses: azure/login@v2
+with:
+client-id: ${{ secrets.AZURE_CLIENT_ID }}
+tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+allow-no-subscriptions: true
+- name: Chạy Script Gia Hạn
+run: python run_oidc.py
