@@ -5,26 +5,34 @@ from azure.identity import DefaultAzureCredential
 
 def main():
     print("Đang xác thực thông qua OIDC...")
-    # Tự động nhận diện chứng chỉ OIDC từ GitHub Actions
     credential = DefaultAzureCredential()
     token_obj = credential.get_token("https://graph.microsoft.com/.default")
     access_token = token_obj.token
 
-    # Các endpoint dành cho Application Permissions
-    endpoints = [
+    # Danh sách 10 endpoint ổn định và cần ít quyền nhất
+    all_endpoints = [
         "https://graph.microsoft.com/v1.0/users",
         "https://graph.microsoft.com/v1.0/sites/root",
-        "https://graph.microsoft.com/v1.0/applications?$count=true"
+        "https://graph.microsoft.com/v1.0/applications?$count=true",
+        "https://graph.microsoft.com/v1.0/groups",
+        "https://graph.microsoft.com/v1.0/domains",
+        "https://graph.microsoft.com/v1.0/organization",
+        "https://graph.microsoft.com/v1.0/directoryRoles",
+        "https://graph.microsoft.com/v1.0/policies/authorizationPolicy",
+        "https://graph.microsoft.com/v1.0/subscribedSkus",
+        "https://graph.microsoft.com/v1.0/devices"
     ]
     
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "ConsistencyLevel": "eventual"
     }
 
-    random.shuffle(endpoints)
+    # Bốc ngẫu nhiên đúng 3 endpoint từ danh sách trên
+    selected_endpoints = random.sample(all_endpoints, 3)
 
-    for endpoint in endpoints:
+    for endpoint in selected_endpoints:
         time.sleep(random.randint(2, 6))
         try:
             resp = requests.get(endpoint, headers=headers)
